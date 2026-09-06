@@ -1,0 +1,833 @@
+--//==================================================
+--// AI FLOATING CHAT UI
+--// Mobile / Touch Support
+--//
+--// AI Logo = เปิดหน้าต่าง + ลากได้
+--// −      = ซ่อนหน้าต่าง
+--// X      = ลบทุกอย่าง
+--// 🗑     = ล้างแชท
+--// ⛶      = เปลี่ยนขนาด
+--// Header = ลากหน้าต่าง
+--//==================================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+--==================================================
+-- COLORS
+--==================================================
+
+local INK = Color3.fromRGB(20,24,28)
+local INK_SOFT = Color3.fromRGB(59,64,58)
+
+local PAPER = Color3.fromRGB(241,243,237)
+local PAPER2 = Color3.fromRGB(231,234,224)
+local PAPER3 = Color3.fromRGB(220,224,211)
+
+local TEAL = Color3.fromRGB(15,110,86)
+local TEAL_DEEP = Color3.fromRGB(10,78,61)
+
+local AMBER_TINT = Color3.fromRGB(246,227,204)
+
+local MUTED = Color3.fromRGB(110,114,104)
+local BORDER = Color3.fromRGB(211,215,201)
+
+--==================================================
+-- GUI
+--==================================================
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "AI_FloatingChat"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = playerGui
+
+--==================================================
+-- AI LOGO
+--==================================================
+
+local logo = Instance.new("TextButton")
+logo.Name = "AILogo"
+logo.Size = UDim2.fromOffset(52,52)
+logo.Position = UDim2.new(0.5,-26,0,18)
+
+logo.BackgroundColor3 = TEAL
+logo.Text = "AI"
+logo.TextColor3 = Color3.fromRGB(255,255,255)
+logo.TextSize = 17
+logo.Font = Enum.Font.GothamBold
+logo.AutoButtonColor = true
+logo.ZIndex = 100
+logo.Parent = gui
+
+local logoCorner = Instance.new("UICorner")
+logoCorner.CornerRadius = UDim.new(1,0)
+logoCorner.Parent = logo
+
+local logoStroke = Instance.new("UIStroke")
+logoStroke.Color = TEAL_DEEP
+logoStroke.Thickness = 1.5
+logoStroke.Parent = logo
+
+--==================================================
+-- MAIN WINDOW
+--==================================================
+
+local main = Instance.new("Frame")
+main.Name = "FloatingWindow"
+
+main.Size = UDim2.new(0.76,0,0.68,0)
+main.Position = UDim2.new(0.5,0,0.5,0)
+main.AnchorPoint = Vector2.new(0.5,0.5)
+
+main.BackgroundColor3 = PAPER
+main.BorderSizePixel = 0
+main.ZIndex = 10
+main.Parent = gui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0,24)
+mainCorner.Parent = main
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(185,190,172)
+mainStroke.Thickness = 1
+mainStroke.Parent = main
+
+--==================================================
+-- HEADER
+--==================================================
+
+local header = Instance.new("Frame")
+header.Name = "Header"
+header.Size = UDim2.new(1,0,0,55)
+header.BackgroundTransparency = 1
+header.BorderSizePixel = 0
+header.ZIndex = 11
+header.Parent = main
+
+--==================================================
+-- DRAG AREA
+-- ไม่คลุมปุ่ม
+--==================================================
+
+local dragArea = Instance.new("Frame")
+dragArea.Name = "DragArea"
+
+dragArea.Size = UDim2.new(1,-180,1,0)
+dragArea.Position = UDim2.new(0,90,0,0)
+
+dragArea.BackgroundTransparency = 1
+dragArea.BorderSizePixel = 0
+dragArea.Active = true
+dragArea.ZIndex = 11
+dragArea.Parent = header
+
+--==================================================
+-- CLOSE X
+--==================================================
+
+local close = Instance.new("TextButton")
+close.Name = "Close"
+
+close.Size = UDim2.fromOffset(34,34)
+close.Position = UDim2.new(0,11,0,10)
+
+close.BackgroundColor3 = PAPER
+close.Text = "×"
+close.TextColor3 = INK
+close.TextSize = 24
+close.Font = Enum.Font.GothamMedium
+
+close.AutoButtonColor = true
+close.Active = true
+close.ZIndex = 30
+close.Parent = header
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0,10)
+closeCorner.Parent = close
+
+local closeStroke = Instance.new("UIStroke")
+closeStroke.Color = BORDER
+closeStroke.Parent = close
+
+--==================================================
+-- MINIMIZE -
+--==================================================
+
+local minimize = Instance.new("TextButton")
+minimize.Name = "Minimize"
+
+minimize.Size = UDim2.fromOffset(34,34)
+minimize.Position = UDim2.new(0,51,0,10)
+
+minimize.BackgroundColor3 = PAPER
+minimize.Text = "−"
+minimize.TextColor3 = INK
+minimize.TextSize = 22
+minimize.Font = Enum.Font.GothamMedium
+
+minimize.AutoButtonColor = true
+minimize.Active = true
+minimize.ZIndex = 30
+minimize.Parent = header
+
+local minimizeCorner = Instance.new("UICorner")
+minimizeCorner.CornerRadius = UDim.new(0,10)
+minimizeCorner.Parent = minimize
+
+local minimizeStroke = Instance.new("UIStroke")
+minimizeStroke.Color = BORDER
+minimizeStroke.Parent = minimize
+
+--==================================================
+-- TITLE
+--==================================================
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0,90,0,35)
+title.Position = UDim2.new(0.5,-45,0,9)
+
+title.BackgroundTransparency = 1
+title.Text = "ถาม."
+title.TextColor3 = INK
+title.TextSize = 22
+title.Font = Enum.Font.Garamond
+title.ZIndex = 20
+title.Parent = header
+
+--==================================================
+-- RESIZE
+--==================================================
+
+local resize = Instance.new("TextButton")
+resize.Name = "Resize"
+
+resize.Size = UDim2.fromOffset(34,34)
+resize.Position = UDim2.new(1,-86,0,10)
+
+resize.BackgroundColor3 = PAPER
+resize.Text = "⛶"
+resize.TextColor3 = INK
+resize.TextSize = 17
+resize.Font = Enum.Font.GothamMedium
+
+resize.AutoButtonColor = true
+resize.Active = true
+resize.ZIndex = 30
+resize.Parent = header
+
+local resizeCorner = Instance.new("UICorner")
+resizeCorner.CornerRadius = UDim.new(0,10)
+resizeCorner.Parent = resize
+
+local resizeStroke = Instance.new("UIStroke")
+resizeStroke.Color = BORDER
+resizeStroke.Parent = resize
+
+--==================================================
+-- TRASH
+--==================================================
+
+local trash = Instance.new("TextButton")
+trash.Name = "ClearChat"
+
+trash.Size = UDim2.fromOffset(34,34)
+trash.Position = UDim2.new(1,-46,0,10)
+
+trash.BackgroundColor3 = PAPER
+trash.Text = "🗑"
+trash.TextColor3 = INK
+trash.TextSize = 16
+trash.Font = Enum.Font.Gotham
+
+trash.AutoButtonColor = true
+trash.Active = true
+trash.ZIndex = 30
+trash.Parent = header
+
+local trashCorner = Instance.new("UICorner")
+trashCorner.CornerRadius = UDim.new(0,10)
+trashCorner.Parent = trash
+
+local trashStroke = Instance.new("UIStroke")
+trashStroke.Color = BORDER
+trashStroke.Parent = trash
+
+--==================================================
+-- CHAT
+--==================================================
+
+local chat = Instance.new("ScrollingFrame")
+chat.Name = "Chat"
+
+chat.Position = UDim2.new(0,12,0,55)
+chat.Size = UDim2.new(1,-24,1,-137)
+
+chat.BackgroundTransparency = 1
+chat.BorderSizePixel = 0
+chat.ScrollBarThickness = 0
+chat.AutomaticCanvasSize = Enum.AutomaticSize.Y
+chat.ZIndex = 12
+chat.Parent = main
+
+local padding = Instance.new("UIPadding")
+padding.PaddingLeft = UDim.new(0,3)
+padding.PaddingRight = UDim.new(0,3)
+padding.PaddingTop = UDim.new(0,6)
+padding.PaddingBottom = UDim.new(0,12)
+padding.Parent = chat
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,10)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = chat
+
+--==================================================
+-- EMPTY
+--==================================================
+
+local empty = Instance.new("Frame")
+empty.Size = UDim2.new(1,0,0,190)
+empty.BackgroundTransparency = 1
+empty.Parent = chat
+
+local greeting = Instance.new("TextLabel")
+greeting.Size = UDim2.new(1,-10,0,60)
+greeting.Position = UDim2.new(0,5,0,20)
+
+greeting.BackgroundTransparency = 1
+greeting.Text = "วันนี้อยากรู้เรื่องอะไร"
+greeting.TextColor3 = INK
+greeting.TextSize = 24
+greeting.Font = Enum.Font.Garamond
+greeting.TextXAlignment = Enum.TextXAlignment.Left
+greeting.Parent = empty
+
+local sub = Instance.new("TextLabel")
+sub.Size = UDim2.new(1,-10,0,40)
+sub.Position = UDim2.new(0,5,0,68)
+
+sub.BackgroundTransparency = 1
+sub.Text = "พิมพ์คำถาม หรือเลือกหัวข้อด้านล่างเพื่อเริ่มคุย"
+sub.TextColor3 = MUTED
+sub.TextSize = 12
+sub.Font = Enum.Font.Gotham
+sub.TextXAlignment = Enum.TextXAlignment.Left
+sub.Parent = empty
+
+--==================================================
+-- INPUT AREA
+--==================================================
+
+local inputArea = Instance.new("Frame")
+inputArea.Size = UDim2.new(1,0,0,82)
+inputArea.Position = UDim2.new(0,0,1,-82)
+
+inputArea.BackgroundColor3 = PAPER
+inputArea.BorderSizePixel = 0
+inputArea.ZIndex = 20
+inputArea.Parent = main
+
+local inputBar = Instance.new("Frame")
+inputBar.Size = UDim2.new(1,-22,0,46)
+inputBar.Position = UDim2.new(0,11,0,5)
+
+inputBar.BackgroundColor3 = Color3.fromRGB(255,255,255)
+inputBar.BorderSizePixel = 0
+inputBar.ZIndex = 21
+inputBar.Parent = inputArea
+
+local inputCorner = Instance.new("UICorner")
+inputCorner.CornerRadius = UDim.new(1,0)
+inputCorner.Parent = inputBar
+
+local inputStroke = Instance.new("UIStroke")
+inputStroke.Color = BORDER
+inputStroke.Parent = inputBar
+
+--==================================================
+-- PLUS
+--==================================================
+
+local plus = Instance.new("TextButton")
+plus.Size = UDim2.fromOffset(32,32)
+plus.Position = UDim2.new(0,6,0.5,-16)
+
+plus.BackgroundColor3 = PAPER2
+plus.Text = "+"
+plus.TextColor3 = INK_SOFT
+plus.TextSize = 19
+plus.Font = Enum.Font.Gotham
+plus.ZIndex = 25
+plus.Parent = inputBar
+
+local plusCorner = Instance.new("UICorner")
+plusCorner.CornerRadius = UDim.new(1,0)
+plusCorner.Parent = plus
+
+--==================================================
+-- TEXTBOX
+--==================================================
+
+local input = Instance.new("TextBox")
+input.Name = "Input"
+
+input.Size = UDim2.new(1,-88,1,-6)
+input.Position = UDim2.new(0,45,0,3)
+
+input.BackgroundTransparency = 1
+input.Text = ""
+input.PlaceholderText = "พิมพ์ข้อความถึง ถาม."
+input.PlaceholderColor3 = Color3.fromRGB(154,158,144)
+
+input.TextColor3 = INK
+input.TextSize = 13
+input.Font = Enum.Font.Gotham
+
+input.TextWrapped = true
+input.TextXAlignment = Enum.TextXAlignment.Left
+input.TextYAlignment = Enum.TextYAlignment.Center
+
+input.ClearTextOnFocus = false
+input.MultiLine = true
+input.ZIndex = 25
+input.Parent = inputBar
+
+--==================================================
+-- SEND
+--==================================================
+
+local send = Instance.new("TextButton")
+send.Size = UDim2.fromOffset(32,32)
+send.Position = UDim2.new(1,-38,0.5,-16)
+
+send.BackgroundColor3 = PAPER3
+send.Text = "↑"
+send.TextColor3 = Color3.fromRGB(167,171,156)
+send.TextSize = 18
+send.Font = Enum.Font.GothamBold
+send.AutoButtonColor = false
+send.ZIndex = 25
+send.Parent = inputBar
+
+local sendCorner = Instance.new("UICorner")
+sendCorner.CornerRadius = UDim.new(1,0)
+sendCorner.Parent = send
+
+--==================================================
+-- SCROLL
+--==================================================
+
+local function scrollBottom()
+
+	task.wait()
+
+	chat.CanvasPosition = Vector2.new(
+		0,
+		math.max(
+			0,
+			chat.AbsoluteCanvasSize.Y -
+			chat.AbsoluteSize.Y
+		)
+	)
+
+end
+
+--==================================================
+-- ADD MESSAGE
+--==================================================
+
+local function addMessage(text,user)
+
+	local row = Instance.new("Frame")
+	row.Size = UDim2.new(1,0,0,0)
+	row.AutomaticSize = Enum.AutomaticSize.Y
+	row.BackgroundTransparency = 1
+	row.Parent = chat
+
+	local bubble = Instance.new("TextLabel")
+
+	bubble.Size = UDim2.new(
+		user and 0.78 or 0.84,
+		0,
+		0,
+		0
+	)
+
+	bubble.AutomaticSize = Enum.AutomaticSize.Y
+
+	if user then
+
+		bubble.Position = UDim2.new(1,0,0,0)
+		bubble.AnchorPoint = Vector2.new(1,0)
+
+		bubble.BackgroundColor3 = AMBER_TINT
+		bubble.TextColor3 = Color3.fromRGB(74,46,15)
+
+	else
+
+		bubble.Position = UDim2.new(0,0,0,0)
+
+		bubble.BackgroundColor3 = PAPER
+		bubble.TextColor3 = INK
+
+	end
+
+	bubble.Text = text
+	bubble.TextSize = 13
+	bubble.Font = Enum.Font.Gotham
+	bubble.TextWrapped = true
+
+	bubble.TextXAlignment = Enum.TextXAlignment.Left
+	bubble.TextYAlignment = Enum.TextYAlignment.Top
+
+	bubble.BorderSizePixel = 0
+	bubble.Parent = row
+
+	local p = Instance.new("UIPadding")
+	p.PaddingLeft = UDim.new(0,12)
+	p.PaddingRight = UDim.new(0,12)
+	p.PaddingTop = UDim.new(0,9)
+	p.PaddingBottom = UDim.new(0,9)
+	p.Parent = bubble
+
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0,15)
+	c.Parent = bubble
+
+	if not user then
+
+		local line = Instance.new("Frame")
+		line.Size = UDim2.new(0,3,1,0)
+		line.BackgroundColor3 = TEAL
+		line.BorderSizePixel = 0
+		line.Parent = bubble
+
+		local lc = Instance.new("UICorner")
+		lc.CornerRadius = UDim.new(1,0)
+		lc.Parent = line
+
+	end
+
+	scrollBottom()
+
+end
+
+--==================================================
+-- SEND SYSTEM
+--==================================================
+
+local busy = false
+
+local function sendMessage()
+
+	if busy then
+		return
+	end
+
+	local text = input.Text
+
+	if not text or text:match("^%s*$") then
+		return
+	end
+
+	busy = true
+
+	empty.Visible = false
+
+	addMessage(text,true)
+
+	input.Text = ""
+
+	task.delay(1,function()
+
+		if not gui.Parent then
+			return
+		end
+
+		addMessage(
+			"นี่คือคำตอบตัวอย่างครับ สามารถเชื่อมต่อ AI API ของคุณตรงส่วนนี้ได้",
+			false
+		)
+
+		busy = false
+
+	end)
+
+end
+
+send.MouseButton1Click:Connect(sendMessage)
+
+--==================================================
+-- INPUT COLOR
+--==================================================
+
+input:GetPropertyChangedSignal("Text"):Connect(function()
+
+	if input.Text:match("%S") then
+
+		send.BackgroundColor3 = TEAL
+		send.TextColor3 = PAPER
+
+	else
+
+		send.BackgroundColor3 = PAPER3
+		send.TextColor3 = Color3.fromRGB(167,171,156)
+
+	end
+
+end)
+
+--==================================================
+-- CLEAR CHAT
+--==================================================
+
+local function clearChat()
+
+	for _,child in ipairs(chat:GetChildren()) do
+
+		if child ~= layout
+			and child ~= padding then
+
+			child:Destroy()
+
+		end
+
+	end
+
+	local newEmpty = Instance.new("Frame")
+	newEmpty.Size = UDim2.new(1,0,0,190)
+	newEmpty.BackgroundTransparency = 1
+	newEmpty.Parent = chat
+
+	local t = Instance.new("TextLabel")
+	t.Size = UDim2.new(1,-10,0,60)
+	t.Position = UDim2.new(0,5,0,20)
+
+	t.BackgroundTransparency = 1
+	t.Text = "วันนี้อยากรู้เรื่องอะไร"
+	t.TextColor3 = INK
+	t.TextSize = 24
+	t.Font = Enum.Font.Garamond
+	t.TextXAlignment = Enum.TextXAlignment.Left
+	t.Parent = newEmpty
+
+	local s = Instance.new("TextLabel")
+	s.Size = UDim2.new(1,-10,0,40)
+	s.Position = UDim2.new(0,5,0,68)
+
+	s.BackgroundTransparency = 1
+	s.Text = "พิมพ์คำถาม หรือเลือกหัวข้อด้านล่างเพื่อเริ่มคุย"
+	s.TextColor3 = MUTED
+	s.TextSize = 12
+	s.Font = Enum.Font.Gotham
+	s.TextXAlignment = Enum.TextXAlignment.Left
+	s.Parent = newEmpty
+
+	input.Text = ""
+
+end
+
+trash.MouseButton1Click:Connect(clearChat)
+
+--==================================================
+-- RESIZE
+--==================================================
+
+local sizeIndex = 1
+
+local sizes = {
+	UDim2.new(0.62,0,0.56,0),
+	UDim2.new(0.76,0,0.68,0),
+	UDim2.new(0.82,0,0.72,0),
+	UDim2.new(0.86,0,0.48,0),
+	UDim2.new(0.48,0,0.78,0),
+	UDim2.new(0.58,0,0.62,0)
+}
+
+resize.MouseButton1Click:Connect(function()
+
+	sizeIndex += 1
+
+	if sizeIndex > #sizes then
+		sizeIndex = 1
+	end
+
+	TweenService:Create(
+		main,
+		TweenInfo.new(
+			0.25,
+			Enum.EasingStyle.Quart,
+			Enum.EasingDirection.Out
+		),
+		{
+			Size = sizes[sizeIndex]
+		}
+	):Play()
+
+end)
+
+--==================================================
+-- MINIMIZE
+--==================================================
+
+minimize.MouseButton1Click:Connect(function()
+
+	main.Visible = false
+	logo.Visible = true
+
+end)
+
+--==================================================
+-- CLOSE / DELETE EVERYTHING
+--==================================================
+
+close.MouseButton1Click:Connect(function()
+
+	if gui and gui.Parent then
+		gui:Destroy()
+	end
+
+end)
+
+--==================================================
+-- AI LOGO OPEN
+--==================================================
+
+logo.MouseButton1Click:Connect(function()
+
+	if not gui.Parent then
+		return
+	end
+
+	main.Visible = true
+	logo.Visible = false
+
+end)
+
+--==================================================
+-- DRAG WINDOW
+--==================================================
+
+local dragging = false
+local dragStart
+local startPosition
+
+dragArea.InputBegan:Connect(function(inputObject)
+
+	if inputObject.UserInputType == Enum.UserInputType.MouseButton1
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+
+		dragStart = inputObject.Position
+		startPosition = main.Position
+
+	end
+
+end)
+
+UserInputService.InputChanged:Connect(function(inputObject)
+
+	if not dragging then
+		return
+	end
+
+	if inputObject.UserInputType == Enum.UserInputType.MouseMovement
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
+
+		local delta = inputObject.Position - dragStart
+
+		main.Position = UDim2.new(
+			startPosition.X.Scale,
+			startPosition.X.Offset + delta.X,
+
+			startPosition.Y.Scale,
+			startPosition.Y.Offset + delta.Y
+		)
+
+	end
+
+end)
+
+UserInputService.InputEnded:Connect(function(inputObject)
+
+	if inputObject.UserInputType == Enum.UserInputType.MouseButton1
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = false
+
+	end
+
+end)
+
+--==================================================
+-- DRAG AI LOGO
+--==================================================
+
+local logoDragging = false
+local logoDragStart
+local logoStartPosition
+
+logo.InputBegan:Connect(function(inputObject)
+
+	if inputObject.UserInputType == Enum.UserInputType.MouseButton1
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
+
+		logoDragging = true
+
+		logoDragStart = inputObject.Position
+		logoStartPosition = logo.Position
+
+	end
+
+end)
+
+UserInputService.InputChanged:Connect(function(inputObject)
+
+	if not logoDragging then
+		return
+	end
+
+	if inputObject.UserInputType == Enum.UserInputType.MouseMovement
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
+
+		local delta = inputObject.Position - logoDragStart
+
+		logo.Position = UDim2.new(
+			logoStartPosition.X.Scale,
+			logoStartPosition.X.Offset + delta.X,
+
+			logoStartPosition.Y.Scale,
+			logoStartPosition.Y.Offset + delta.Y
+		)
+
+	end
+
+end)
+
+UserInputService.InputEnded:Connect(function(inputObject)
+
+	if inputObject.UserInputType == Enum.UserInputType.MouseButton1
+		or inputObject.UserInputType == Enum.UserInputType.Touch then
+
+		logoDragging = false
+
+	end
+
+end)
+
+--==================================================
+-- START
+--==================================================
+
+main.Visible = true
+logo.Visible = false
+
+print("AI Floating Mobile Chat Loaded Successfully")
